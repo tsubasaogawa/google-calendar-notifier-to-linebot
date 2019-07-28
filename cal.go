@@ -10,11 +10,12 @@ import (
 	"google.golang.org/api/calendar/v3"
 )
 
-type Cal struct{
-	cred string
+// Cal is
+type Cal struct {
+	cred       string
 	maxResults int64
-	srv *calendar.Service
-	Plans []Plan
+	srv        *calendar.Service
+	Plans      []Plan
 }
 
 const (
@@ -74,10 +75,10 @@ func (c *Cal) Retrieve(days int, onlyPubItem bool) {
 			}
 
 			(*c).Plans = append((*c).Plans, Plan{
-				date: date,
+				date:  date,
 				title: item.Summary,
 			})
-			fmt.Printf("%+v\n\n", item)
+			// fmt.Printf("%+v\n\n", item)
 		}
 	}
 }

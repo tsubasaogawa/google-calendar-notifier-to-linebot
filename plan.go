@@ -1,6 +1,7 @@
 package main
 
-type Plan struct{
-	date string
+// Plan is
+type Plan struct {
+	date  string
 	title string
 }
