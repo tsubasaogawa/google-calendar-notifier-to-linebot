@@ -1,5 +1,8 @@
 package main
 
+// Google calendar client object.
+// Script is from https://developers.google.com/calendar/quickstart/go
+
 import (
 	"encoding/json"
 	"fmt"
@@ -11,12 +14,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Script from https://developers.google.com/calendar/quickstart/go
-
-// Client ...
+// Client have no property.
 type Client struct{}
 
-// Retrieve a token, saves the token, then returns the generated client.
+// Create retrieves a token, saves the token, then returns the generated client.
 func (c Client) Create(config *oauth2.Config) *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
@@ -24,8 +25,8 @@ func (c Client) Create(config *oauth2.Config) *http.Client {
 	tokFile := "token.json"
 	tok, err := c.tokenFromFile(tokFile)
 	if err != nil {
-			tok = c.getTokenFromWeb(config)
-			c.saveToken(tokFile, tok)
+		tok = c.getTokenFromWeb(config)
+		c.saveToken(tokFile, tok)
 	}
 	return config.Client(context.Background(), tok)
 }
@@ -34,16 +35,16 @@ func (c Client) Create(config *oauth2.Config) *http.Client {
 func (c Client) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	fmt.Printf("Go to the following link in your browser then type the "+
-			"authorization code: \n%v\n", authURL)
+		"authorization code: \n%v\n", authURL)
 
 	var authCode string
 	if _, err := fmt.Scan(&authCode); err != nil {
-			log.Fatalf("Unable to read authorization code: %v", err)
+		log.Fatalf("Unable to read authorization code: %v", err)
 	}
 
 	tok, err := config.Exchange(context.TODO(), authCode)
 	if err != nil {
-			log.Fatalf("Unable to retrieve token from web: %v", err)
+		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
 	return tok
 }
@@ -52,7 +53,7 @@ func (c Client) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 func (c Client) tokenFromFile(file string) (*oauth2.Token, error) {
 	f, err := os.Open(file)
 	if err != nil {
-			return nil, err
+		return nil, err
 	}
 	defer f.Close()
 	tok := &oauth2.Token{}
@@ -65,7 +66,7 @@ func (c Client) saveToken(path string, token *oauth2.Token) {
 	fmt.Printf("Saving credential file to: %s\n", path)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-			log.Fatalf("Unable to cache oauth token: %v", err)
+		log.Fatalf("Unable to cache oauth token: %v", err)
 	}
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)

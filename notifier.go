@@ -1,5 +1,7 @@
 package main
 
+// Notifier main
+
 import (
 	"fmt"
 
@@ -8,41 +10,47 @@ import (
 	"github.com/tsubasaogawa/linebot-publisher-layer-go"
 )
 
+// Define default values if environment variable is not set.
 const (
-	// cred is a client secret file name.
+	// client secret file name
 	cred = "credentials.json"
 
-	// maxResults is the maximum number of results.
+	// the maximum number of results
 	maxResults = 10
 
-	// days is target days.
+	// target days
 	days = 1
 
-	// onlyPubItem is what obtains public items only if true.
+	// If true, notifier shows only public items.
 	onlyPubItem = true
+
+	// Custom text showed above obtained plans
+	description = "今日の予定だよ"
 )
 
-// Env is ...
+// Env has properties of environment variable; used by envconfig
 type Env struct {
 	Cred        string
 	MaxResults  int64
 	Days        int
 	OnlyPubItem bool
-	ToID        string
+	Description string
+	// LINE ID
+	ToID string
+	// LINE access token
 	AccessToken string
 }
 
-// Event is from lambda.
+// Event is lambda events.
 type Event struct {
 	// :
 }
 
-// Response is returned by the function.
+// Response is returned value by the function.
 type Response struct {
 	Num int `json:"Num"`
 }
 
-// notifier is
 func notifier(event Event) (Response, error) {
 	env := getEnv()
 
@@ -56,22 +64,22 @@ func notifier(event Event) (Response, error) {
 		return Response{Num: 0}, nil
 	}
 
-	// fmt.Printf("%v", (*cal).Plans)
+	fmt.Printf("%v", (*cal).Plans)
 
-	message := "今日の予定だよ\n"
+	message := env.Description
 	for _, plan := range plans {
-		// fmt.Printf("Date: %s Title: %s\n", plan.date, plan.title)
-		message += fmt.Sprintf("  %s %s\n", plan.date, plan.title)
+		message += fmt.Sprintf("\n  %s %s", plan.date, plan.title)
 	}
 	linebot.Publish(env.ToID, message, false)
 
 	return Response{Num: len(plans)}, nil
 }
 
-// getEnv is
 func getEnv() Env {
 	env := Env{}
 	envconfig.Process("", &env)
+
+	// Set default value if env value is not set
 	if env.Cred == "" {
 		env.Cred = cred
 	}
@@ -83,6 +91,9 @@ func getEnv() Env {
 	}
 	if env.OnlyPubItem == false {
 		env.OnlyPubItem = onlyPubItem
+	}
+	if env.Description == "" {
+		env.Description = description
 	}
 
 	return env
