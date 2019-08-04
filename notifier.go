@@ -70,7 +70,7 @@ func notifier(event Event) (Response, error) {
 	for _, plan := range plans {
 		message += fmt.Sprintf("\n  %s %s", plan.date, plan.title)
 	}
-	linebot.Publish(env.ToID, message, false)
+	linebot.Publish(env.ToID, env.AccessToken, message, false)
 
 	return Response{Num: len(plans)}, nil
 }
