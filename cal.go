@@ -25,17 +25,25 @@ type Cal struct {
 }
 
 const (
-	// time format
-	dtfmt = "2006-01-02T00:00:00.000Z"
-
 	// time zone; default value is JST (+9)
+	// if UTC, convTime = "Z"
 	convTime = "+09:00"
+	timezone = "Asia/Tokyo"
+
+	// time format
+	dtfmt = "2006-01-02T00:00:00.000" + convTime
 )
 
 // NewCal is that creates a new calendar object.
 func (c *Cal) NewCal(cred string, maxResults int64) {
 	(*c).cred = cred
 	(*c).maxResults = maxResults
+
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		loc = time.FixedZone(timezone, 9*60*60)
+	}
+	time.Local = loc
 
 	c.createGoogleCalendar()
 }
