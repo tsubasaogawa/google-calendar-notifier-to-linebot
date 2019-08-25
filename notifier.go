@@ -7,7 +7,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/tsubasaogawa/linebot-publisher-layer-go"
+	"github.com/tsubasaogawa/linebot-publisher-go"
 )
 
 // Define default values if environment variable is not set.
@@ -21,24 +21,22 @@ const (
 	// target days
 	days = 1
 
-	// If true, notifier shows only public items.
-	onlyPubItem = true
-
 	// Custom text showed above obtained plans
 	description = "今日の予定だよ"
 )
 
 // Env has properties of environment variable; used by envconfig
 type Env struct {
-	Cred        string
-	MaxResults  int64
-	Days        int
-	OnlyPubItem bool
-	Description string
+	Cred            string
+	MaxResults      int64
+	Days            int
+	ShowPrivateItem bool
+	Description     string
 	// LINE ID
 	ToID string
 	// LINE access token
 	AccessToken string
+	DoNotNotify bool
 }
 
 // Event is lambda events.
@@ -58,19 +56,21 @@ func notifier(event Event) (Response, error) {
 	cal := &Cal{}
 	cal.NewCal(env.Cred, env.MaxResults)
 
-	cal.Retrieve(env.Days, env.OnlyPubItem)
+	cal.Retrieve(env.Days, !env.ShowPrivateItem)
 	plans := (*cal).Plans
 	if len(plans) == 0 {
+		fmt.Println("No plans.")
 		return Response{Num: 0}, nil
 	}
-
-	fmt.Printf("%v", (*cal).Plans)
 
 	message := env.Description
 	for _, plan := range plans {
 		message += fmt.Sprintf("\n  %s %s", plan.date, plan.title)
 	}
-	linebot.Publish(env.ToID, env.AccessToken, message, false)
+	if !env.DoNotNotify {
+		linebot.Publish(env.ToID, env.AccessToken, message, false)
+	}
+	fmt.Println(message)
 
 	return Response{Num: len(plans)}, nil
 }
@@ -88,9 +88,6 @@ func getEnv() Env {
 	}
 	if env.Days == 0 {
 		env.Days = days
-	}
-	if env.OnlyPubItem == false {
-		env.OnlyPubItem = onlyPubItem
 	}
 	if env.Description == "" {
 		env.Description = description
